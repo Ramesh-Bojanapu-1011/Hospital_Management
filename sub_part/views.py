@@ -1,10 +1,6 @@
-import email  # noqa: F401
-from re import I  # noqa: F401
 from django.shortcuts import render
 
 from django.contrib import messages
-from django.conf import settings
-from django.core.mail import send_mail
 
 from .models import (
     contact_form_table,
@@ -58,17 +54,7 @@ def appintment_form(request):
                 doctor=request.POST.get("doctor"),
             )
             ex1.save()
-            user_name = request.POST.get("Your_Name")
-            email_id = request.POST.get("email")
-            timeing = request.POST.get("date_time")
-
-            subject = "welcome to MEDICE LAB"
-            message = f"Hi {
-                user_name}, your appointment has booked. timing {timeing}"
-            email_from = settings.EMAIL_HOST_USER
-            recipient_list = [email_id]
-            send_mail(subject, message, email_from, recipient_list)
-            print("successfuly sent mail")
+           
             messages.error(
                 request, "Successfully submited  your Appointment", extra_tags="saved_a"
             )
@@ -124,20 +110,12 @@ def registration(request):
                 username=request.POST.get("username"),
                 email_id=request.POST.get("email_id"),
                 Password=request.POST.get("Password"),
-                # mobile_number=request.POST.get('mobile_number')
+                mobile_number=request.POST.get('mobile_number')
             )
             if len(request.FILES) != 0:
-                ex1.profile = request.FILES.get("profile")
+                ex1.profile = request.FILES.get("profiles")
             ex1.save()
-            user_name = request.POST.get("username")
-            email_id = request.POST.get("email_id")
-
-            subject = "welcome to MEDICE LAB"
-            message = f"Hi {user_name}, thank you for registering MEDICE LAB."
-            email_from = settings.EMAIL_HOST_USER
-            recipient_list = [email_id]
-            send_mail(subject, message, email_from, recipient_list)
-            print("successfuly sent mail")
+             
 
             messages.error(request, "Successly registered", extra_tags="register")
             return render(request, "login.html")
