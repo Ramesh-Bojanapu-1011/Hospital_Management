@@ -10,8 +10,29 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+class SequentialIDModel(models.Model):
+    class Meta:
+        abstract = True
 
-class profile(models.Model):
+    def save(self, *args, **kwargs):
+        if not self.id:
+            last = self.__class__.objects.order_by("-id").first()
+            self.id = (last.id + 1) if last else 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        model_class = self.__class__
+        super().delete(*args, **kwargs)
+
+        # Resequence all objects to ensure ids are 1...n
+        all_objs = model_class.objects.all().order_by("id")
+        for idx, obj in enumerate(all_objs, start=1):
+            if obj.id != idx:
+                # To update primary key, we must use raw SQL or recreate the object
+                model_class.objects.filter(pk=obj.pk).update(id=idx)
+
+
+class profile(SequentialIDModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     forgot_password_token = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=TRUE)
@@ -20,7 +41,7 @@ class profile(models.Model):
         return self.user
 
 
-class otp_details(models.Model):
+class otp_details(SequentialIDModel):
     email_id = models.EmailField()
     otp = models.CharField(max_length=10)
 
@@ -28,7 +49,7 @@ class otp_details(models.Model):
         return self.email_id
 
 
-class contact_form_table(models.Model):
+class contact_form_table(SequentialIDModel):
     name = models.CharField(max_length=100)  # noqa: F811
     email_id = models.EmailField()
     subject = models.CharField(max_length=200)
@@ -38,7 +59,7 @@ class contact_form_table(models.Model):
         return self.name
 
 
-class Appointment_form_submition(models.Model):
+class Appointment_form_submition(SequentialIDModel):
     Your_Name = models.CharField(max_length=100)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15)
@@ -50,7 +71,7 @@ class Appointment_form_submition(models.Model):
         return self.Your_Name
 
 
-class registration_table(models.Model):
+class registration_table(SequentialIDModel):
     username = models.CharField(max_length=100)
     email_id = models.EmailField()
     Password = models.CharField(max_length=100)
@@ -61,7 +82,7 @@ class registration_table(models.Model):
         return self.username
 
 
-class add_doctor_details(models.Model):
+class add_doctor_details(SequentialIDModel):
     # Doctor_Photo=models.FileField(upload_to="Doctors")
     Doctor_Name = models.CharField(max_length=100)
     Department = models.CharField(max_length=100)
@@ -74,7 +95,7 @@ class add_doctor_details(models.Model):
         return self.Doctor_Name
 
 
-class add_staff_details(models.Model):
+class add_staff_details(SequentialIDModel):
     Staff_Id = models.CharField(max_length=20)
     Staff_Name = models.CharField(max_length=100)
     Category = models.CharField(max_length=100)
@@ -86,7 +107,7 @@ class add_staff_details(models.Model):
         return self.Staff_Name
 
 
-class add_Appointment_details(models.Model):
+class add_Appointment_details(SequentialIDModel):
     Token_Number = models.CharField(max_length=15)
     Paitent_Name = models.CharField(max_length=100)
     Age = models.CharField(max_length=10)
@@ -99,7 +120,7 @@ class add_Appointment_details(models.Model):
         return self.Paitent_Name
 
 
-class add_IPD_details(models.Model):
+class add_IPD_details(SequentialIDModel):
     Joining_Date = models.CharField(max_length=10)
     Paitent_Name = models.CharField(max_length=100)
     Age = models.CharField(max_length=10)
@@ -115,7 +136,7 @@ class add_IPD_details(models.Model):
         return self.Paitent_Name
 
 
-class add_OPD_details(models.Model):
+class add_OPD_details(SequentialIDModel):
 
     Paitent_Name = models.CharField(max_length=100)
     Age = models.CharField(max_length=10)
@@ -130,7 +151,7 @@ class add_OPD_details(models.Model):
         return self.Paitent_Name
 
 
-class add_EmergencyWard_details(models.Model):
+class add_EmergencyWard_details(SequentialIDModel):
     Patient_Id = models.CharField(max_length=10)
     Ward_Num = models.CharField(max_length=15)
     Bed_Num = models.CharField(max_length=15)
@@ -142,7 +163,7 @@ class add_EmergencyWard_details(models.Model):
         return self.Patient_Id
 
 
-class add_Covid_19_details(models.Model):
+class add_Covid_19_details(SequentialIDModel):
     Paitent_Name = models.CharField(max_length=100)
     Age = models.CharField(max_length=10)
     Gender = models.CharField(max_length=10)
@@ -156,7 +177,7 @@ class add_Covid_19_details(models.Model):
         return self.Paitent_Name
 
 
-class add_BirthRecord_details(models.Model):
+class add_BirthRecord_details(SequentialIDModel):
     Child_Name = models.CharField(max_length=100)
     Gender = models.CharField(max_length=10)
     Birth_Date = models.CharField(max_length=20)
@@ -169,7 +190,7 @@ class add_BirthRecord_details(models.Model):
         return self.Child_Name
 
 
-class add_Radiology_details(models.Model):
+class add_Radiology_details(SequentialIDModel):
     Patient_Id = models.CharField(max_length=10)
     Test_Name = models.CharField(max_length=50)
     Short_Name = models.CharField(max_length=10)
@@ -184,7 +205,7 @@ class add_Radiology_details(models.Model):
         return self.Patient_Id
 
 
-class add_Pathology_details(models.Model):
+class add_Pathology_details(SequentialIDModel):
     Patient_Id = models.CharField(max_length=10)
     Test_Name = models.CharField(max_length=50)
     Short_Name = models.CharField(max_length=10)
@@ -199,7 +220,7 @@ class add_Pathology_details(models.Model):
         return self.Patient_Id
 
 
-class add_OperationTheater_details(models.Model):
+class add_OperationTheater_details(SequentialIDModel):
     Patient_Number = models.CharField(max_length=50)
     Gender = models.CharField(max_length=10)
     Contact_Number = models.CharField(max_length=15)
@@ -214,7 +235,7 @@ class add_OperationTheater_details(models.Model):
         return self.Patient_Number
 
 
-class add_Pharmacy_details(models.Model):
+class add_Pharmacy_details(SequentialIDModel):
     PATIENT_NAME = models.CharField(max_length=100)
     Docter_Name = models.CharField(max_length=100)
     BILL_TOTAL = models.CharField(max_length=100)
@@ -224,7 +245,7 @@ class add_Pharmacy_details(models.Model):
         return self.PATIENT_NAME
 
 
-class add_Ambulance_details(models.Model):
+class add_Ambulance_details(SequentialIDModel):
     Vehical_Number = models.CharField(max_length=20)
     Vehical_Model = models.CharField(max_length=20)
     Year_Made = models.CharField(max_length=10)
