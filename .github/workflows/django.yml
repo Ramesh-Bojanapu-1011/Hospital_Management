@@ -27,6 +27,3 @@ jobs:
       - name: Run Tests
         run: |
           python manage.py test
-      - name: Run project
-        run: |
-          python manage.py runserver
